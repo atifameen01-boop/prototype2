@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProtoSpec AI - Research-to-Prototype & Testing Proposal Generator</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React and ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Mammoth.js for browser DOCX parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  
+  <!-- Marked.js for markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              500: '#0284c7',
+              600: '#0265d2',
+              700: '#034ea2',
+              800: '#074283',
+              900: '#0c376d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .prose h1 { font-size: 1.75rem; font-weight: 700; color: #0f172a; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .prose h2 { font-size: 1.35rem; font-weight: 600; color: #1e293b; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; color: #334155; margin-top: 1rem; margin-bottom: 0.25rem; }
+    .prose p { margin-bottom: 0.85rem; line-height: 1.65; color: #334155; }
+    .prose ul, .prose ol { margin-bottom: 0.85rem; padding-left: 1.5rem; }
+    .prose li { margin-bottom: 0.35rem; color: #334155; }
+    .prose ul { list-style-type: disc; }
+    .prose ol { list-style-type: decimal; }
+    .prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .prose th, .prose td { border: 1px solid #cbd5e1; padding: 0.6rem 0.8rem; text-align: left; }
+    .prose th { background-color: #f1f5f9; font-weight: 600; color: #0f172a; }
+    .prose blockquote { border-left: 4px solid #0284c7; padding-left: 1rem; color: #475569; font-style: italic; margin: 1rem 0; background: #f8fafc; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .prose code { background-color: #f1f5f9; padding: 0.15rem 0.35rem; border-radius: 0.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; color: #0f172a; }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+
+    // Sample Research Proposals for instant testing
+    const SAMPLE_PROPOSALS = [
+      {
+        id: 'smart-agri',
+        title: 'AI-Guided IoT Micro-Sensor Network for Soil Health & Crop Diagnostics',
+        domain: 'Agricultural Engineering / Embedded IoT / AI',
+        text: `RESEARCH PROPOSAL: AI-Guided IoT Micro-Sensor Network for Continuous Soil Health Monitoring
+
+1. INTRODUCTION & OBJECTIVES:
+Traditional soil testing methods are labor-intensive, costly, and provide delayed feedback to farmers, leading to over-fertilization and land degradation. This research proposes a low-cost, decentralized electrochemical sensor array paired with edge computing to continuously measure NPK (Nitrogen, Phosphorus, Potassium) ion concentrations, pH, and moisture.
+
+2. METHODOLOGY:
+We hypothesize that surface-modified ion-selective field-effect transistors (ISFETs) can achieve high selectivity for nitrate and potassium ions in saturated soil conditions. The raw spectral and electrochemical readings will be processed locally via an ultra-low power microcontroller executing a pruned random forest model to predict real-time nutrient depletion.
+
+3. RESEARCH QUESTIONS:
+- Can nano-coated ISFET sensors maintain calibration stability over 90 days in acidic soil environments?
+- What is the energy efficiency threshold required for solar-harvesting edge nodes transmitting data via LoRaWAN up to 5km?
+
+4. EXPECTED SCIENTIFIC NOVELTY:
+Development of self-calibrating electrochemical algorithms and field-hardened micro-sensor packaging capable of surviving seasonal moisture fluctuations.`
+      },
+      {
+        id: 'medtech-optical',
+        title: 'Non-Invasive Wearable Optical Glucose Monitor using NIR Spectroscopy',
+        domain: 'Biomedical Devices / Optics / Signal Processing',
+        text: `RESEARCH PROPOSAL: Multi-Wavelength Near-Infrared Optical Sensor for Non-Invasive Continuous Glucose Tracking
+
+1. BACKGROUND & PROBLEM:
+Diabetes management requires frequent capillary blood draws, causing patient discomfort and poor compliance. Non-invasive optical monitoring remains challenging due to signal attenuation from epidermal scattering, skin pigmentation, and thermal fluctuations.
+
+2. RESEARCH HYPOTHESIS & APPROACH:
+We propose combining multi-wavelength near-infrared (850nm - 1550nm) diffuse reflectance photoplethysmography with adaptive neural networks to decouple glucose absorbance signatures from tissue hydration and skin temperature interference.
+
+3. KEY RESEARCH OBJECTIVES:
+- Construct an optical sensing array with 4 discrete laser diode wavelengths optimized for subcutaneous capillary beds.
+- Formulate a machine learning algorithm that isolates blood glucose variation from ambient temperature changes (20°C - 40°C).
+- Validate sensor agreement against reference YSI 2300 STAT blood glucose analyzers in simulated benchtop blood tissue phantoms.`
+      }
+    ];
+
+    // Main App Component
+    function App() {
+      const [uploadedFile, setUploadedFile] = React.useState(null);
+      const [extractedText, setExtractedText] = React.useState('');
+      const [isParsing, setIsParsing] = React.useState(false);
+      const [parsingError, setParsingError] = React.useState('');
+      
+      // Configuration options
+      const [protoType, setProtoType] = React.useState('Hardware/IoT Device');
+      const [fidelity, setFidelity] = React.useState('Functional MVP');
+      const [testingFocus, setTestingFocus] = React.useState('Performance & Precision Metrics');
+      const [duration, setDuration] = React.useState('6 Months');
+      const [proposalFormat, setProposalFormat] = React.useState('Academic R&D / Grant Agency');
+      
+      // AI Generation state
+      const [isGenerating, setIsGenerating] = React.useState(false);
+      const [generationStep, setGenerationStep] = React.useState('');
+      const [generatedProposal, setGeneratedProposal] = React.useState('');
+      const [activeTab, setActiveTab] = React.useState('proposal'); // 'proposal', 'architecture', 'testing', 'roadmap'
+      
+      // AI Refinement Prompt state
+      const [refinePrompt, setRefinePrompt] = React.useState('');
+      const [isRefining, setIsRefining] = React.useState(false);
+      const [toast, setToast] = React.useState(null);
+      const [isManualInput, setIsManualInput] = React.useState(false);
+
+      // Show temporary notification
+      const showToast = (message, type = 'info') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3500);
+      };
+
+      const extractTextFromDocFile = async (file) => {
+        const arrayBuffer = await file.arrayBuffer();
+
+        // Strategy 1: Mammoth / Modern XML embedded
+        try {
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          if (result.value && result.value.trim().length > 30) {
+            return result.value.trim();
+          }
+        } catch (e) {
+          // Ignore and proceed to binary stream decoders
+        }
+
+        // Strategy 2: UTF-16LE text stream decoding (Standard Word 97-2003 binary format)
+        try {
+          const decoder = new TextDecoder('utf-16le', { fatal: false });
+          const text16 = decoder.decode(arrayBuffer);
+          const lines16 = text16
+            .replace(/[^\x20-\x7E\t\r\n]/g, ' ')
+            .split(/\r?\n/)
+            .map(l => l.trim())
+            .filter(l => l.length > 15 && /\b[a-zA-Z]{2,}\b/.test(l));
+
+          if (lines16.length >= 3) {
+            return lines16.join('\n\n');
+          }
+        } catch (e) {
+          // Fall through
+        }
+
+        // Strategy 3: ISO-8859-1 decoding for 8-bit Word binary streams
+        try {
+          const decoder = new TextDecoder('iso-8859-1', { fatal: false });
+          const text8 = decoder.decode(arrayBuffer);
+          const lines8 = text8
+            .replace(/[^\x20-\x7E\t\r\n]/g, ' ')
+            .split(/\r?\n/)
+            .map(l => l.trim())
+            .filter(l => l.length > 15 && /\b[a-zA-Z]{2,}\b/.test(l));
+
+          if (lines8.length >= 3) {
+            return lines8.join('\n\n');
+          }
+        } catch (e) {
+          // Fall through
+        }
+
+        // Strategy 4: Raw Dual-Byte ASCII & UTF16 stream chunk scanner
+        const uint8 = new Uint8Array(arrayBuffer);
+        const textChunks = [];
+
+        // Dual-byte scan for UTF-16LE character streams
+        let chunk16 = '';
+        for (let i = 0; i < uint8.length - 1; i += 2) {
+          const b1 = uint8[i];
+          const b2 = uint8[i + 1];
+          if (b2 === 0 && ((b1 >= 32 && b1 <= 126) || b1 === 10 || b1 === 13 || b1 === 9)) {
+            chunk16 += String.fromCharCode(b1);
+          } else {
+            if (chunk16.trim().length >= 6) textChunks.push(chunk16.trim());
+            chunk16 = '';
+          }
+        }
+        if (chunk16.trim().length >= 6) textChunks.push(chunk16.trim());
+
+        // Single-byte scan for ASCII character streams
+        let chunk8 = '';
+        for (let i = 0; i < uint8.length; i++) {
+          const b = uint8[i];
+          if ((b >= 32 && b <= 126) || b === 10 || b === 13 || b === 9) {
+            chunk8 += String.fromCharCode(b);
+          } else {
+            if (chunk8.trim().length >= 6) textChunks.push(chunk8.trim());
+            chunk8 = '';
+          }
+        }
+        if (chunk8.trim().length >= 6) textChunks.push(chunk8.trim());
+
+        // Clean & filter system junk strings
+        const filtered = textChunks.filter(c => {
+          if (/^(Microsoft|Normal\.dot|Root Entry|WordDocument|Table|SummaryInformation|DocumentSummaryInformation|CompObj|ObjectPool)/i.test(c)) return false;
+          if (!/[a-zA-Z]/.test(c)) return false;
+          return c.split(/\s+/).length >= 2;
+        });
+
+        // Deduplicate
+        const unique = Array.from(new Set(filtered));
+        if (unique.length > 0) {
+          return unique.join('\n\n');
+        }
+
+        throw new Error("Could not automatically extract readable text from this .doc file. Please paste the proposal text manually or save as .docx.");
+      };
+
+      const handleFileUpload = async (file) => {
+        if (!file) return;
+        setParsingError('');
+        setIsParsing(true);
+        setUploadedFile(file);
+
+        try {
+          if (file.name.endsWith('.docx')) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            if (result.value && result.value.trim().length > 0) {
+              setExtractedText(result.value);
+              showToast(`Extracted ${result.value.split(/\s+/).length} words from ${file.name}`, 'success');
+            } else {
+              throw new Error("Could not extract readable text from the uploaded .docx document.");
+            }
+          } else if (file.name.endsWith('.doc')) {
+            const text = await extractTextFromDocFile(file);
+            setExtractedText(text);
+            showToast(`Extracted text from .doc file (${file.name})`, 'success');
+          } else if (file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+            const text = await file.text();
+            setExtractedText(text);
+            showToast(`Loaded ${text.split(/\s+/).length} words from file.`, 'success');
+          } else {
+            throw new Error("Please upload a valid .docx, .doc, or text file.");
+          }
+        } catch (err) {
+          console.error(err);
+          setParsingError(err.message || "Failed to parse document.");
+          showToast(err.message || "Error reading file", "error");
+        } finally {
+          setIsParsing(false);
+        }
+      };
+
+      const handleSampleSelect = (sample) => {
+        setUploadedFile({ name: `${sample.id}-sample.docx`, size: sample.text.length * 2 });
+        setExtractedText(sample.text);
+        showToast(`Loaded sample research proposal: ${sample.title}`, 'success');
+      };
+
+      const generatePrototypeProposal = async () => {
+        if (!extractedText.trim()) {
+          showToast("Please upload a research proposal or select a sample first.", "error");
+          return;
+        }
+
+        setIsGenerating(true);
+        setGenerationStep('Analyzing research research questions and methodology...');
+
+        const systemPrompt = `You are a Principal R&D Systems Engineer, Technology Transfer Officer, and Chief Scientist. 
+Your goal is to transform an existing academic/scientific Research Proposal into a comprehensive, actionable, and grant-ready "PROTOTYPE DEVELOPMENT & TESTING PROPOSAL".
+Focus on converting theoretical research findings, hypotheses, and experimental models into physical, digital, or algorithmic prototype specifications and rigorous empirical testing protocols.`;
+
+        const userQuery = `Below is an uploaded Research Proposal:
+---
+${extractedText.slice(0, 12000)}
+---
+
+CONFIGURED PROTOTYPE & TESTING REQUIREMENTS:
+- Prototype Type: ${protoType}
+- Target Fidelity: ${fidelity}
+- Primary Testing Focus: ${testingFocus}
+- Target Development Duration: ${duration}
+- Output Target Style: ${proposalFormat}
+
+Please generate a high-precision, technical PROTOTYPE DEVELOPMENT AND TESTING PROPOSAL formatted in clean Markdown.
+
+Structure the proposal with the following detailed sections:
+
+# 1. Executive Summary & Research-to-Prototype Transition
+- Core Research Translation Strategy (How theory turns into practical engineering)
+- Prototype Value Proposition & Technical Objectives
+- Expected Feasibility Metrics
+
+# 2. Prototype Functional Architecture & System Specifications
+- Hardware / Software / Algorithmic Component Decomposition
+- System Architecture Description & Data Flow
+- Bill of Materials / Tech Stack & Core Hardware/Software Dependencies
+- Key Design Constraints & Operating Parameters
+
+# 3. Prototype Development & Engineering Sprint Roadmap
+- Phase 1: Subsystem Design & Proof-of-Concept Benchmarking (${duration === '3 Months' ? 'Month 1' : 'Months 1-2'})
+- Phase 2: System Integration & MVP Assembly (${duration === '3 Months' ? 'Month 2' : 'Months 3-4'})
+- Phase 3: Field-Hardening & Testing Optimization (${duration === '3 Months' ? 'Month 3' : 'Months 5-6'})
+- Sprint Milestones Table
+
+# 4. Comprehensive Testing, Calibration & Validation Protocols
+- Test Environment & Experimental Setup
+- Detailed Test Cases Matrix (Include: Test ID, Objective, Variable Measured, Acceptance Criteria, Success Metric)
+- Stress Testing, Edge Cases & Failure Mode Analysis
+- Human Factors, Safety & Environmental Compliance Protocols
+
+# 5. Feasibility Risk Assessment & Mitigation Plan
+- Technical Risks (e.g., Signal Noise, Hardware Latency, Thermal Drift, Calibration Loss)
+- Operational/Resource Risks
+- Concrete Mitigation Actions
+
+# 6. Resource Allocation & Testing Deliverables
+- Hardware, Lab Instrumentation, & Software Tools Needed
+- Target Testing Metrics & Sign-Off Deliverables for Next-Phase Scaling`;
+
+        try {
+          const apiKey = ""; // Canvas handles runtime Gemini API key injection
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+          setGenerationStep('Engaging Gemini R&D Engine to synthesize prototype specifications...');
+          
+          const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+          };
+
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`API Error: ${response.status} ${response.statusText}`);
+          }
+
+          const result = await response.json();
+          const candidate = result.candidates?.[0];
+          const generatedText = candidate?.content?.parts?.[0]?.text;
+
+          if (generatedText) {
+            setGeneratedProposal(generatedText);
+            setActiveTab('proposal');
+            showToast("Prototype & Testing Proposal generated successfully!", "success");
+          } else {
+            throw new Error("No text response returned from Gemini API.");
+          }
+        } catch (err) {
+          console.error(err);
+          showToast(`Generation failed: ${err.message}`, "error");
+        } finally {
+          setIsGenerating(false);
+          setGenerationStep('');
+        }
+      };
+
+      const handleRefineProposal = async () => {
+        if (!refinePrompt.trim() || !generatedProposal) return;
+        setIsRefining(true);
+
+        const systemPrompt = "You are an expert technical editor and research systems architect. Modify the provided proposal according to the user's refinement instructions while maintaining high engineering rigor and clear markdown structure.";
+        const query = `CURRENT PROPOSAL DOCUMENT:
+${generatedProposal}
+
+USER REFINEMENT REQUEST:
+"${refinePrompt}"
+
+Please output the updated, full proposal document in clear markdown.`;
+
+        try {
+          const apiKey = "";
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+          const payload = {
+            contents: [{ parts: [{ text: query }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+          };
+
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json();
+          const updatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+          if (updatedText) {
+            setGeneratedProposal(updatedText);
+            setRefinePrompt('');
+            showToast("Proposal updated based on your instructions!", "success");
+          } else {
+            throw new Error("Unable to refine proposal.");
+          }
+        } catch (err) {
+          console.error(err);
+          showToast(`Refinement failed: ${err.message}`, "error");
+        } finally {
+          setIsRefining(false);
+        }
+      };
+
+      const exportAsDocx = () => {
+        if (!generatedProposal) return;
+        
+        // Convert marked markdown to clean HTML
+        const htmlContent = marked.parse(generatedProposal);
+        
+        const docxHeader = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><title>Prototype Proposal</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.5; font-size: 11pt; color: #111; }
+          h1 { font-size: 18pt; color: #0284c7; border-bottom: 2pt solid #0284c7; padding-bottom: 4pt; }
+          h2 { font-size: 14pt; color: #0f172a; margin-top: 14pt; }
+          h3 { font-size: 12pt; color: #334155; }
+          table { border-collapse: collapse; width: 100%; margin: 12pt 0; }
+          th, td { border: 1pt solid #cbd5e1; padding: 6pt; text-align: left; }
+          th { background-color: #f1f5f9; font-weight: bold; }
+          blockquote { border-left: 3pt solid #0284c7; padding-left: 8pt; color: #555; background: #fafafa; }
+        </style>
+        </head><body>`;
+        const docxFooter = `</body></html>`;
+        
+        const blob = new Blob([docxHeader + htmlContent + docxFooter], {
+          type: 'application/vnd.ms-word'
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Prototype_Development_and_Testing_Proposal.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast("Downloaded proposal document!", "success");
+      };
+
+      const exportAsMarkdown = () => {
+        if (!generatedProposal) return;
+        const blob = new Blob([generatedProposal], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Prototype_Development_and_Testing_Proposal.md`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast("Exported Markdown file!", "success");
+      };
+
+      const copyToClipboard = () => {
+        if (!generatedProposal) return;
+        // Fallback execution command for iFrame safety
+        const textarea = document.createElement('textarea');
+        textarea.value = generatedProposal;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showToast("Proposal markdown copied to clipboard!", "success");
+        } catch (err) {
+          showToast("Failed to copy text", "error");
+        }
+        document.body.removeChild(textarea);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">
+          
+          {/* Toast Notification */}
+          {toast && (
+            <div className={`fixed bottom-5 right-5 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-medium flex items-center space-x-2 transition-all transform translate-y-0 ${
+              toast.type === 'error' ? 'bg-red-600 text-white' : 
+              toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-white'
+            }`}>
+              <span>{toast.type === 'error' ? '⚠️' : toast.type === 'success' ? '✅' : 'ℹ️'}</span>
+              <span>{toast.message}</span>
+            </div>
+          )}
+
+          {/* Top Header */}
+          <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
+            <div className="max-w-7xl mx-mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-sky-500/20 text-xl">
+                  🚀
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-sky-400 bg-clip-text text-transparent">
+                    ProtoSpec AI
+                  </h1>
+                  <p className="text-xs text-slate-400">Research DOCX to Prototype & Testing Proposal Engine</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400 mr-1.5 animate-pulse"></span>
+                  Gemini 3 Flash Engine
+                </span>
+                <a 
+                  href="#how-it-works"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    showToast("Upload your research proposal DOCX, configure parameters, and generate!", "info");
+                  }}
+                  className="text-xs text-slate-400 hover:text-white transition"
+                >
+                  Help & Docs
+                </a>
+              </div>
+            </div>
+          </header>
+
+          {/* Main Layout */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {}
+            <div className="lg:col-span-5 space-y-6">
+              
+              {/* Card 1: DOCX Upload & Preview */}
+              <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm backdrop-blur">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-sky-400 flex items-center">
+                    <span className="mr-2">📄</span> 1. Research Proposal Input
+                  </h2>
+                  {extractedText && (
+                    <span className="text-xs text-emerald-400 font-mono flex items-center">
+                      ✓ Ready ({extractedText.split(/\s+/).length} words)
+                    </span>
+                  )}
+                </div>
+
+                {/* Dropzone or Manual Text Area */}
+                {!isManualInput ? (
+                  <div 
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleFileUpload(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+                      uploadedFile 
+                        ? 'border-sky-500/50 bg-sky-500/5' 
+                        : 'border-slate-700 hover:border-sky-500/50 hover:bg-slate-800/80'
+                    }`}
+                    onClick={() => document.getElementById('docx-input').click()}
+                  >
+                    <input 
+                      id="docx-input" 
+                      type="file" 
+                      accept=".docx,.doc,.txt,.md" 
+                      className="hidden" 
+                      onChange={(e) => e.target.files[0] && handleFileUpload(e.target.files[0])}
+                    />
+
+                    {isParsing ? (
+                      <div className="py-4 flex flex-col items-center space-y-2">
+                        <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-xs text-slate-300 font-medium">Extracting text from Word document...</p>
+                      </div>
+                    ) : uploadedFile ? (
+                      <div className="space-y-1">
+                        <div className="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 mx-auto flex items-center justify-center text-xl">
+                          📄
+                        </div>
+                        <p className="text-sm font-semibold text-slate-200 truncate">{uploadedFile.name}</p>
+                        <p className="text-xs text-slate-400">Click or drag a new file to replace</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 py-2">
+                        <div className="w-12 h-12 rounded-xl bg-slate-700/50 text-slate-400 mx-auto flex items-center justify-center text-2xl">
+                          📥
+                        </div>
+                        <p className="text-sm font-medium text-slate-300">
+                          Upload Research Proposal <span className="text-sky-400 font-semibold">.docx / .doc</span>
+                        </p>
+                        <p className="text-xs text-slate-500">Drag & drop your Word file (.docx or .doc) or click to browse</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <textarea
+                      value={extractedText}
+                      onChange={(e) => setExtractedText(e.target.value)}
+                      placeholder="Paste your research proposal text here..."
+                      className="w-full h-40 bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500 resize-none"
+                    />
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center mt-2 text-[11px] text-slate-400">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsManualInput(!isManualInput)} 
+                    className="text-sky-400 hover:underline font-medium"
+                  >
+                    {isManualInput ? '← Switch to File Upload' : '✏️ Paste / Edit Research Text Directly'}
+                  </button>
+                </div>
+
+                {parsingError && (
+                  <p className="mt-2 text-xs text-red-400 bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">
+                    {parsingError}
+                  </p>
+                )}
+
+                {/* Sample Proposals Quick Selector */}
+                <div className="mt-4 pt-3 border-t border-slate-700/50">
+                  <p className="text-xs font-medium text-slate-400 mb-2">Or test with a sample research proposal:</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {SAMPLE_PROPOSALS.map((sample) => (
+                      <button
+                        key={sample.id}
+                        type="button"
+                        onClick={() => handleSampleSelect(sample)}
+                        className="text-left p-2.5 rounded-lg bg-slate-900/60 hover:bg-slate-700/60 border border-slate-700/50 text-xs transition group"
+                      >
+                        <div className="font-semibold text-slate-200 group-hover:text-sky-300 flex items-center justify-between">
+                          <span className="truncate">{sample.title}</span>
+                          <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded ml-2">Sample</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 truncate mt-0.5">{sample.domain}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Extracted Text Collapsible Preview */}
+                {extractedText && (
+                  <div className="mt-4">
+                    <details className="group border border-slate-700/50 rounded-xl bg-slate-900/40 overflow-hidden">
+                      <summary className="px-3 py-2 text-xs font-medium text-slate-400 cursor-pointer hover:text-slate-200 flex justify-between items-center select-none">
+                        <span>Preview Extracted Research Text</span>
+                        <span className="group-open:rotate-180 transition-transform">▼</span>
+                      </summary>
+                      <div className="p-3 text-xs font-mono text-slate-300 max-h-40 overflow-y-auto whitespace-pre-wrap bg-slate-950/60 border-t border-slate-800">
+                        {extractedText}
+                      </div>
+                    </details>
+                  </div>
+                )}
+              </div>
+
+              {}
+              <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm backdrop-blur space-y-4">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-sky-400 flex items-center">
+                  <span className="mr-2">⚙️</span> 2. Prototype & Test Parameters
+                </h2>
+
+                <div className="space-y-3 text-xs">
+                  {/* Prototype Type */}
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Target Prototype Classification</label>
+                    <select 
+                      value={protoType} 
+                      onChange={(e) => setProtoType(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                    >
+                      <option>Hardware/IoT Device</option>
+                      <option>Software MVP / Mobile App</option>
+                      <option>Embedded System & Firmware</option>
+                      <option>AI Model & Pipeline Engine</option>
+                      <option>Biotech/Lab Diagnostic Setup</option>
+                      <option>Mechanical/Robotic Mechanism</option>
+                    </select>
+                  </div>
+
+                  {/* Target Fidelity */}
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Prototype Target Fidelity</label>
+                    <select 
+                      value={fidelity} 
+                      onChange={(e) => setFidelity(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                    >
+                      <option>Proof-of-Concept (Benchtop / Alpha)</option>
+                      <option>Functional MVP (Beta Test Ready)</option>
+                      <option>High-Fidelity Pre-Production Prototype</option>
+                      <option>Integrated Field-Deployable Unit</option>
+                    </select>
+                  </div>
+
+                  {/* Testing Focus */}
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Primary Testing & Validation Focus</label>
+                    <select 
+                      value={testingFocus} 
+                      onChange={(e) => setTestingFocus(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                    >
+                      <option>Performance & Precision Metrics</option>
+                      <option>Usability & Human-Centered UX</option>
+                      <option>Environmental Stress & Durability</option>
+                      <option>Scalability & System Load Benchmark</option>
+                      <option>Clinical / Field Trial Feasibility</option>
+                    </select>
+                  </div>
+
+                  {/* Duration & Format Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Project Duration</label>
+                      <select 
+                        value={duration} 
+                        onChange={(e) => setDuration(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                      >
+                        <option>3 Months</option>
+                        <option>6 Months</option>
+                        <option>12 Months</option>
+                        <option>18 Months</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">Target Style</label>
+                      <select 
+                        value={proposalFormat} 
+                        onChange={(e) => setProposalFormat(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                      >
+                        <option>Academic R&D / Grant Agency</option>
+                        <option>NSF / NIH SBIR Phase II</option>
+                        <option>Corporate R&D Innovation Pitch</option>
+                        <option>Tech Incubator Demo Plan</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Generate Button */}
+                <button
+                  type="button"
+                  onClick={generatePrototypeProposal}
+                  disabled={isGenerating || !extractedText}
+                  className={`w-full mt-4 py-3 px-4 rounded-xl font-semibold text-sm shadow-lg flex items-center justify-center space-x-2 transition-all ${
+                    isGenerating || !extractedText
+                      ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-sky-500 via-sky-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-sky-500/25 active:scale-[0.99]'
+                  }`}
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Synthesizing Proposal...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>⚡</span>
+                      <span>Generate Prototype & Testing Proposal</span>
+                    </>
+                  )}
+                </button>
+
+                {isGenerating && generationStep && (
+                  <p className="text-[11px] text-sky-400 font-mono text-center animate-pulse">
+                    {generationStep}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {}
+            <div className="lg:col-span-7 flex flex-col h-full space-y-4">
+              
+              {!generatedProposal && !isGenerating && (
+                <div className="flex-1 bg-slate-800/40 border border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-4 min-h-[450px]">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-3xl shadow-inner">
+                    📐
+                  </div>
+                  <div className="max-w-md space-y-2">
+                    <h3 className="text-base font-semibold text-slate-200">No Proposal Generated Yet</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Upload your research proposal DOCX file on the left (or select a sample document), set your prototype development parameters, and click <span className="text-sky-400 font-medium">Generate Prototype & Testing Proposal</span>.
+                    </p>
+                  </div>
+                  <div className="pt-2 grid grid-cols-2 gap-3 text-left w-full max-w-sm">
+                    <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                      <div className="text-sky-400 text-xs font-semibold mb-1">1. Translation</div>
+                      <div className="text-[11px] text-slate-400">Converts research theory into hardware/software architecture.</div>
+                    </div>
+                    <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                      <div className="text-indigo-400 text-xs font-semibold mb-1">2. Testing Plan</div>
+                      <div className="text-[11px] text-slate-400">Builds empirical test matrix, KPIs, and pass/fail metrics.</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {isGenerating && (
+                <div className="flex-1 bg-slate-800/40 border border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-5 min-h-[450px]">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-3xl">
+                      🧠
+                    </div>
+                    <div className="absolute -inset-1 rounded-2xl border-2 border-sky-500/40 animate-ping"></div>
+                  </div>
+                  <div className="space-y-2 max-w-sm">
+                    <h3 className="text-base font-semibold text-slate-200">Architecting Prototype & Test Protocol</h3>
+                    <p className="text-xs text-sky-400 font-mono animate-pulse">{generationStep}</p>
+                  </div>
+                </div>
+              )}
+
+              {}
+              {generatedProposal && !isGenerating && (
+                <div className="flex-1 bg-slate-800/60 border border-slate-700/60 rounded-2xl flex flex-col overflow-hidden shadow-lg backdrop-blur">
+                  
+                  {/* Proposal Navigation & Action Header */}
+                  <div className="bg-slate-900/80 border-b border-slate-700/60 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                    {/* View Tabs */}
+                    <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-medium">
+                      <button
+                        onClick={() => setActiveTab('proposal')}
+                        className={`px-3 py-1.5 rounded-lg transition ${
+                          activeTab === 'proposal' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        📄 Full Document
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('architecture')}
+                        className={`px-3 py-1.5 rounded-lg transition ${
+                          activeTab === 'architecture' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        🧩 Specs & Stack
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('testing')}
+                        className={`px-3 py-1.5 rounded-lg transition ${
+                          activeTab === 'testing' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        🧪 Test Matrix
+                      </button>
+                    </div>
+
+                    {/* Export Actions */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={exportAsDocx}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-medium flex items-center space-x-1.5 transition"
+                        title="Download as Microsoft Word document"
+                      >
+                        <span>📥</span>
+                        <span>Export DOCX</span>
+                      </button>
+                      <button
+                        onClick={exportAsMarkdown}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium flex items-center space-x-1 transition"
+                        title="Download raw markdown"
+                      >
+                        <span>.MD</span>
+                      </button>
+                      <button
+                        onClick={copyToClipboard}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium flex items-center space-x-1 transition"
+                        title="Copy text"
+                      >
+                        <span>📋</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Document Display Area */}
+                  <div className="flex-1 p-6 overflow-y-auto max-h-[600px] bg-slate-900/50">
+                    
+                    {/* TAB 1: FULL DOCUMENT MARKDOWN VIEW */}
+                    {activeTab === 'proposal' && (
+                      <div className="prose prose-invert max-w-none text-slate-200 text-sm bg-white text-slate-900 p-8 rounded-xl shadow-lg font-sans">
+                        <div dangerouslySetInnerHTML={{ __html: marked.parse(generatedProposal) }} />
+                      </div>
+                    )}
+
+                    {/* TAB 2: SPECS & SYSTEM ARCHITECTURE VISUAL CARD BREAKDOWN */}
+                    {activeTab === 'architecture' && (
+                      <div className="space-y-4 text-xs">
+                        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                          <h3 className="text-sm font-bold text-sky-400 mb-2 flex items-center">
+                            <span className="mr-2">⚙️</span> Prototype Architectural Parameters
+                          </h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-slate-300">
+                            <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                              <span className="text-[10px] text-slate-500 uppercase block">Domain</span>
+                              <span className="font-semibold text-slate-200">{protoType}</span>
+                            </div>
+                            <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                              <span className="text-[10px] text-slate-500 uppercase block">Fidelity Level</span>
+                              <span className="font-semibold text-sky-300">{fidelity}</span>
+                            </div>
+                            <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                              <span className="text-[10px] text-slate-500 uppercase block">Target Duration</span>
+                              <span className="font-semibold text-emerald-300">{duration}</span>
+                            </div>
+                            <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                              <span className="text-[10px] text-slate-500 uppercase block">Format Style</span>
+                              <span className="font-semibold text-slate-200 truncate block">{proposalFormat}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                          <h3 className="text-sm font-bold text-slate-200 mb-3">Extracted System Specifications & BOM Summary</h3>
+                          <p className="text-slate-400 mb-4 leading-relaxed">
+                            Below is the synthesized subsystem architecture derived from the research translation plan:
+                          </p>
+
+                          <div className="space-y-3">
+                            <div className="p-3 bg-slate-900/80 rounded-xl border-l-4 border-sky-500 border-slate-800">
+                              <div className="font-semibold text-sky-300 text-xs">Primary Subsystem: Physical/Digital Interface Module</div>
+                              <div className="text-slate-400 text-[11px] mt-1">Converts raw research inputs into engineered signal processing or computational logic layers.</div>
+                            </div>
+                            <div className="p-3 bg-slate-900/80 rounded-xl border-l-4 border-indigo-500 border-slate-800">
+                              <div className="font-semibold text-indigo-300 text-xs">Secondary Subsystem: Processing & Analytics Engine</div>
+                              <div className="text-slate-400 text-[11px] mt-1">Local edge computing or software algorithms enforcing research operational bounds.</div>
+                            </div>
+                            <div className="p-3 bg-slate-900/80 rounded-xl border-l-4 border-emerald-500 border-slate-800">
+                              <div className="font-semibold text-emerald-300 text-xs">Validation & Logging Subsystem</div>
+                              <div className="text-slate-400 text-[11px] mt-1">Telemetry, sensor feedback, and ground-truth comparative output recorder.</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB 3: TESTING MATRIX & KPI INSPECTOR */}
+                    {activeTab === 'testing' && (
+                      <div className="space-y-4 text-xs">
+                        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                          <h3 className="text-sm font-bold text-emerald-400 mb-2 flex items-center">
+                            <span className="mr-2">🧪</span> Empirical Validation & Testing Matrix
+                          </h3>
+                          <p className="text-slate-400 mb-4">
+                            Primary validation focus configured: <strong className="text-emerald-300">{testingFocus}</strong>. Key test protocols generated in proposal:
+                          </p>
+
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
+                                  <th className="p-2 font-semibold">Test ID</th>
+                                  <th className="p-2 font-semibold">Objective</th>
+                                  <th className="p-2 font-semibold">Variable / Parameter</th>
+                                  <th className="p-2 font-semibold">Target Acceptance Criteria</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-800/60 text-slate-300 text-[11px]">
+                                <tr>
+                                  <td className="p-2 font-mono text-sky-400">TC-01</td>
+                                  <td className="p-2 font-medium">Baseline Accuracy Check</td>
+                                  <td className="p-2">Signal Drift / Output Variance</td>
+                                  <td className="p-2 text-emerald-400 font-mono">≤ 2.5% deviation vs standard reference</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-2 font-mono text-sky-400">TC-02</td>
+                                  <td className="p-2 font-medium">Stress & Boundary Trial</td>
+                                  <td className="p-2">Temperature / Load Cycles</td>
+                                  <td className="p-2 text-emerald-400 font-mono">Continuous operation for 72 consecutive hours</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-2 font-mono text-sky-400">TC-03</td>
+                                  <td className="p-2 font-medium">Usability & Response Latency</td>
+                                  <td className="p-2">Execution / Feedback Time</td>
+                                  <td className="p-2 text-emerald-400 font-mono">Latency &lt; 150ms per evaluation cycle</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-2 font-mono text-sky-400">TC-04</td>
+                                  <td className="p-2 font-medium">Noise & Interference Isolation</td>
+                                  <td className="p-2">Signal-to-Noise Ratio (SNR)</td>
+                                  <td className="p-2 text-emerald-400 font-mono">SNR &gt; 28 dB under noisy ambient conditions</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+
+                  {}
+                  <div className="p-3 bg-slate-950 border-t border-slate-800">
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleRefineProposal();
+                      }}
+                      className="flex items-center space-x-2"
+                    >
+                      <input
+                        type="text"
+                        value={refinePrompt}
+                        onChange={(e) => setRefinePrompt(e.target.value)}
+                        placeholder="Request edits (e.g. 'Add detailed budget breakdown table' or 'Focus testing on ISO safety compliance')..."
+                        className="flex-1 bg-slate-900 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                        disabled={isRefining}
+                      />
+                      <button
+                        type="submit"
+                        disabled={isRefining || !refinePrompt.trim()}
+                        className={`px-4 py-2 rounded-xl font-medium text-xs transition flex items-center space-x-1 ${
+                          isRefining || !refinePrompt.trim()
+                            ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                            : 'bg-sky-600 hover:bg-sky-500 text-white shadow'
+                        }`}
+                      >
+                        {isRefining ? (
+                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <>
+                            <span>✨</span>
+                            <span>Refine</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+
+                </div>
+              )}
+
+            </div>
+
+          </main>
+
+          {/* Footer */}
+          <footer className="border-t border-slate-800/80 bg-slate-950 py-4 text-center text-xs text-slate-500">
+            <p>ProtoSpec AI • Automated Research-to-Prototype & Testing Proposal Synthesizer • Powered by Gemini AI</p>
+          </footer>
+
+        </div>
+      );
+    }
+
+    const rootElement = document.getElementById('root');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
+  </script>
+</body>
+</html>
